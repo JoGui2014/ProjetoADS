@@ -77,7 +77,7 @@ class AppGUI(QMainWindow):
                         csv_writer.writerows(json_data)
                     QMessageBox.information(self, "Success", "Successfully converted to: " + file_path)
         except Exception as e:
-            QMessageBox.critical(self, "Error", "Error converting JSON to CSV: " + str(e)
+            QMessageBox.critical(self, "Error", "Error converting JSON to CSV: " + str(e))
 
             # def json_to_csv(self, input_file_or_url):
     #     try:
