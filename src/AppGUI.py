@@ -2,7 +2,6 @@ import sys
 import json
 import csv
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QRadioButton, QButtonGroup, QMessageBox, QFileDialog
-from PyQt5.QtCore import Qt
 
 class AppGUI(QMainWindow):
     def __init__(self):
@@ -26,14 +25,6 @@ class AppGUI(QMainWindow):
 
         self.button_group = QButtonGroup(self)
 
-        self.csv_to_json_radio = QRadioButton("CSV to JSON", self)
-        self.csv_to_json_radio.setChecked(True)
-        layout.addWidget(self.csv_to_json_radio)
-        self.button_group.addButton(self.csv_to_json_radio)
-
-        self.json_to_csv_radio = QRadioButton("JSON to CSV", self)
-        layout.addWidget(self.json_to_csv_radio)
-        self.button_group.addButton(self.json_to_csv_radio)
 
         self.convert_button = QPushButton("Convert", self)
         self.convert_button.clicked.connect(self.convert_button_clicked)
@@ -42,8 +33,12 @@ class AppGUI(QMainWindow):
         self.centralWidget().setLayout(layout)
 
     def convert_button_clicked(self):
-        option = 1 if self.csv_to_json_radio.isChecked() else 2
         input_file_or_url = self.input_file_text.text()
+        option = 2
+
+        if ".csv" in input_file_or_url:
+            option = 1
+
 
         try:
             if option == 1:
@@ -72,8 +67,42 @@ class AppGUI(QMainWindow):
                 csv_data = csv.DictWriter(sys.stdout, json_data[0].keys())
                 csv_data.writeheader()
                 csv_data.writerows(json_data)
+
+                csv_content = sys.stdout.getvalue()
+                self.save_file("CSV", csv_content)
         except Exception as e:
-            QMessageBox.critical(self, "Error", "Error converting JSON to CSV: " + str(e))
+            QMessageBox.critical(self, "Error", "Error converting JSON to CSV and saving: " + str(e))
+
+            # def json_to_csv(self, input_file_or_url):
+    #     try:
+    #         with self.get_input_stream(input_file_or_url) as input_stream:
+    #             json_data = json.load(input_stream)
+    #
+    #             if isinstance(json_data, list) and len(json_data) > 0:
+    #                 # Assuming the CSV header order is preserved in JSON data
+    #                 fieldnames = json_data[0].keys()
+    #
+    #                 # Double-check if fieldnames contain "null" and remove it if present
+    #                 if "null" in fieldnames:
+    #                     fieldnames.remove("null")
+    #
+    #                 options = QFileDialog.Options()
+    #                 file_path, _ = QFileDialog.getSaveFileName(
+    #                     self, "Save CSV File", "", "CSV Files (*.csv);;All Files (*)", options=options)
+    #
+    #                 if file_path:
+    #                     with open(file_path, "w", newline="", encoding="utf-8") as csv_file:
+    #                         csv_writer = csv.DictWriter(csv_file, fieldnames)
+    #                         csv_writer.writeheader()
+    #                         csv_writer.writerows(json_data)
+    #
+    #                     QMessageBox.information(self, "Success", "Successfully converted to: " + file_path)
+    #                 else:
+    #                     QMessageBox.information(self, "Info", "No file selected for saving.")
+    #             else:
+    #                 QMessageBox.critical(self, "Error", "Invalid JSON data format.")
+    #     except Exception as e:
+    #         QMessageBox.critical(self, "Error", "Error converting JSON to CSV: " + str(e))
 
     def get_input_stream(self, input_file_or_url):
         if input_file_or_url.startswith("http") or input_file_or_url.startswith("https"):
