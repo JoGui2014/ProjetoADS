@@ -64,14 +64,20 @@ class AppGUI(QMainWindow):
         try:
             with self.get_input_stream(input_file_or_url) as input_stream:
                 json_data = json.load(input_stream)
-                csv_data = csv.DictWriter(sys.stdout, json_data[0].keys())
-                csv_data.writeheader()
-                csv_data.writerows(json_data)
+                csv_data = json_data[0].keys()  # Extract the field names
 
-                csv_content = sys.stdout.getvalue()
-                self.save_file("CSV", csv_content)
+                options = QFileDialog.Options()
+                file_path, _ = QFileDialog.getSaveFileName(
+                    self, "Save CSV File", "", "CSV Files (*.csv);;All Files (*)", options=options)
+
+                if file_path:
+                    with open(file_path, "w", newline="", encoding="utf-8") as csv_file:
+                        csv_writer = csv.DictWriter(csv_file, csv_data)
+                        csv_writer.writeheader()
+                        csv_writer.writerows(json_data)
+                    QMessageBox.information(self, "Success", "Successfully converted to: " + file_path)
         except Exception as e:
-            QMessageBox.critical(self, "Error", "Error converting JSON to CSV and saving: " + str(e))
+            QMessageBox.critical(self, "Error", "Error converting JSON to CSV: " + str(e)
 
             # def json_to_csv(self, input_file_or_url):
     #     try:
