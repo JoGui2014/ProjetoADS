@@ -1,7 +1,9 @@
 import sys
 import json
 import csv
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QRadioButton, QButtonGroup, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, \
+    QRadioButton, QButtonGroup, QMessageBox, QFileDialog
+
 
 class AppGUI(QMainWindow):
     def __init__(self):
@@ -15,22 +17,26 @@ class AppGUI(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        layout = QVBoxLayout()
+        self.layout = QVBoxLayout()
 
         self.input_label = QLabel("Input File/URL:", self)
-        layout.addWidget(self.input_label)
+        self.layout.addWidget(self.input_label)
 
         self.input_file_text = QLineEdit(self)
-        layout.addWidget(self.input_file_text)
+        self.layout.addWidget(self.input_file_text)
 
         self.button_group = QButtonGroup(self)
 
-
         self.convert_button = QPushButton("Convert", self)
         self.convert_button.clicked.connect(self.convert_button_clicked)
-        layout.addWidget(self.convert_button)
+        self.layout.addWidget(self.convert_button)
 
-        self.centralWidget().setLayout(layout)
+        #Inês
+        self.over_population_button = QPushButton("Aulas em Sobrelotação", self)
+        self.over_population_button.clicked.connect(self.over_population_button_clicked)
+        self.layout.addWidget(self.over_population_button)
+
+        self.centralWidget().setLayout(self.layout)
 
     def convert_button_clicked(self):
         input_file_or_url = self.input_file_text.text()
@@ -38,7 +44,6 @@ class AppGUI(QMainWindow):
 
         if ".csv" in input_file_or_url:
             option = 1
-
 
         try:
             if option == 1:
@@ -80,6 +85,7 @@ class AppGUI(QMainWindow):
             QMessageBox.critical(self, "Error", "Error converting JSON to CSV: " + str(e))
 
             # def json_to_csv(self, input_file_or_url):
+
     #     try:
     #         with self.get_input_stream(input_file_or_url) as input_stream:
     #             json_data = json.load(input_stream)
@@ -127,6 +133,57 @@ class AppGUI(QMainWindow):
                 QMessageBox.information(self, "Success", "Successfully converted to: " + file_path)
             except Exception as e:
                 QMessageBox.critical(self, "Error", "Error saving file: " + str(e))
+
+    #Inês
+    def over_population_button_clicked(self):
+        input_file = self.input_file_text.text()
+
+        if ".json" in input_file:
+            input_file = self.json_to_csv(self, input_file)
+
+        try:
+            with self.get_input_stream(input_file) as input_stream:
+                csv_data = input_stream.read().decode("utf-8")
+                csv_data = [line.split(';') for line in csv_data.split('\n') if line]  # Convert CSV string to a list of lists
+
+                if csv_data:
+                    header_row = csv_data[0]
+                    lotacao_index = -1  # Initialize with an invalid index
+                    inscritos_index = -1  # Initialize with an invalid index
+
+                    # Find the index of the columns dynamically
+                    for index, column_name in enumerate(header_row):
+                        if "Lotação" in column_name:
+                            lotacao_index = index
+                        if "Inscritos no turno" in column_name:
+                            inscritos_index = index
+
+                    if lotacao_index != -1 and inscritos_index != -1:
+                        # Valid columns found, proceed with checking for overpopulation
+
+                        with open("overpopulated_classes.csv", "w", newline="", encoding="utf-8") as csv_file:
+                            csv_writer = csv.writer(csv_file)
+
+                            # Write the header row to the output file
+                            csv_writer.writerow(header_row)
+
+                            for row in csv_data[1:]:
+                                try:
+                                    lotacao = int(row[lotacao_index])
+                                    inscritos = int(row[inscritos_index])
+                                    if isinstance(lotacao, int) and isinstance(inscritos, int):
+                                        if inscritos > lotacao:
+                                            print(row)
+                                            csv_writer.writerow(row)
+                                except ValueError as e:
+                                    pass
+                        csv_file.close()
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", "Error showing Over Population: " + str(e))
+
+        # Display a message indicating the process is complete
+        QMessageBox.information(self, "Overpopulation Classes", "Overpopulated classes have been saved to 'overpopulated_classes.csv'.")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
