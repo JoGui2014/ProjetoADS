@@ -11,7 +11,7 @@ from AppGUI import AppGUI
 from django.shortcuts import render
 from .models import ArquivoForm
 
-app_name = 'calendar'
+app_name = 'src'
 
 def convertView(request):
     if request.method == 'POST':
@@ -22,4 +22,4 @@ def convertView(request):
             app.convert_button_clicked(uploaded_file)
     else:
         form = ArquivoForm()
-    return render(request, 'homePage.html', {'form': form})
+    return render(request, 'converted.html', {'result_message': result_message})

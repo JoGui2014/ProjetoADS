@@ -38,8 +38,8 @@ class AppGUI(QMainWindow):
 
         self.centralWidget().setLayout(self.layout)
 
-    def convert_button_clicked(self):
-        input_file_or_url = self.input_file_text.text()
+    def convert_button_clicked(self, input_file_or_url):
+        #input_file_or_url = self.input_file_text.text()
         option = 2
 
         if ".csv" in input_file_or_url:

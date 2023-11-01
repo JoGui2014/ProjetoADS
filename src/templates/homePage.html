@@ -4,7 +4,7 @@
 </head> 
 <body>
     <h1>Choose Local File To Convert</h1>
-    <form action=" {% url 'views:convertView'%}" method="post" enctype="multipart/form-data">
+    <form action=" {% url 'src:convertView'%}" method="post" enctype="multipart/form-data">
         <label for="myfile">Select a file:</label>
         <input type="file" id="myfile" name="myfile"><br><br>
         <input type="submit">
